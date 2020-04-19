@@ -2,13 +2,20 @@ package com.buransky.max7219.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class SafeLongLedMatrix extends LongLedMatrix {
-    public SafeLongLedMatrix(final int displayRows, final int displayColumns, final int displayCount) {
-        super(displayRows, displayColumns, displayCount);
+public class SafeLongLedMatrix extends FastLedMatrix {
+    public SafeLongLedMatrix(final int displayRows,
+                             final int displayColumns,
+                             final int displaysVertically,
+                             final int displaysHorizontally) {
+        super(displayRows, displayColumns, displaysVertically, displaysHorizontally);
     }
 
-    public SafeLongLedMatrix(final int displayRows, final int displayColumns, final long[] displays) {
-        super(displayRows, displayColumns, displays);
+    public SafeLongLedMatrix(final int displayRows,
+                             final int displayColumns,
+                             final int displaysVertically,
+                             final int displaysHorizontally,
+                             final long[] displays) {
+        super(displayRows, displayColumns, displaysVertically, displaysHorizontally, displays);
     }
 
     @Override
