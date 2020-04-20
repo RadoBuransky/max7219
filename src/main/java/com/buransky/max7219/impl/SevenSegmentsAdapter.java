@@ -3,6 +3,8 @@ package com.buransky.max7219.impl;
 import com.buransky.max7219.Register;
 import com.buransky.max7219.SevenSegments;
 
+import java.util.List;
+
 /**
  * Adapter forwarding calls to fast LED matrix implementation. It's only about semantics.
  */
@@ -14,17 +16,17 @@ public class SevenSegmentsAdapter implements SevenSegments {
     }
 
     @Override
-    public byte[] execute(final Register[] register) {
+    public List<Byte> execute(final Register[] register) {
         return ledMatrix.execute(register);
     }
 
     @Override
-    public byte[] executeAll(Register register) {
-        return new byte[0];
+    public List<Byte> executeAll(Register register) {
+        return ledMatrix.executeAll(register);
     }
 
     @Override
-    public byte[] draw() {
+    public List<Byte> draw() {
         return ledMatrix.draw();
     }
 

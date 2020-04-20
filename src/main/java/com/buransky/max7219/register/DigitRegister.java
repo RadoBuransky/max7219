@@ -12,7 +12,7 @@ public class DigitRegister implements Register {
 
     public DigitRegister(final RegisterAddress registerAddress, final byte data) {
         checkArgument(registerAddress.getAddress() >= Digit0.getAddress());
-        checkArgument(registerAddress.getAddress() >= Digit7.getAddress());
+        checkArgument(registerAddress.getAddress() <= Digit7.getAddress());
         this.registerAddress = registerAddress;
         this.data = data;
     }

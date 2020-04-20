@@ -3,23 +3,25 @@ package com.buransky.max7219.impl;
 import com.buransky.max7219.LedMatrix;
 import com.buransky.max7219.Register;
 import com.buransky.max7219.register.DigitRegister;
+import com.buransky.max7219.register.NoOpRegister;
 import com.buransky.max7219.register.RegisterAddress;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.buransky.max7219.impl.LedMatrixUtils.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class FastLedMatrix implements LedMatrix {
-    public static final int MAX_DISPLAY_ROWS = 8;
-    public static final int MAX_DISPLAY_COLUMNS = 8;
+    public static final long MAX_DISPLAY_ROWS = 8;
+    public static final long MAX_DISPLAY_COLUMNS = 8;
 
-    protected final int displayRows;
-    protected final int displayColumns;
-    protected final int displaysVertically;
-    protected final int displaysHorizontally;
+    protected final long displayRows;
+    protected final long displayColumns;
+    protected final long displaysVertically;
+    protected final long displaysHorizontally;
     protected final long[] displays;
     protected final long[] previousDisplays;
     protected boolean anyChange;
@@ -53,20 +55,20 @@ public class FastLedMatrix implements LedMatrix {
     }
 
     @Override
-    public byte[] execute(final Register[] registers) {
+    public List<Byte> execute(final Register[] registers) {
         checkNotNull(registers);
         checkArgument(registers.length == displays.length);
 
-        final short[][] packets = new short[displays.length][1];
+        final short[] packets = new short[displays.length];
         for (int i = 0; i < displays.length; i++) {
-            packets[i][0] = registerToPacket(registers[i]);
+            packets[i] = registerToPacket(registers[i]);
         }
 
         return PacketSerialization.serialize(packets);
     }
 
     @Override
-    public byte[] executeAll(final Register register) {
+    public List<Byte> executeAll(final Register register) {
         checkNotNull(register);
         final Register[] registers = new Register[displays.length];
         Arrays.fill(registers, register);
@@ -74,47 +76,70 @@ public class FastLedMatrix implements LedMatrix {
     }
 
     @Override
-    public byte[] draw() {
+    public List<Byte> draw() {
+        final ArrayList<Byte> result = new ArrayList<>();
+
         if (!anyChange) {
-            return null;
+            return result;
         }
 
-        final byte rowMask = (byte)(0xFF >>> (8 - displayColumns));
-        final ArrayList<DigitRegister> digitRegisters = new ArrayList<>(128);
+        final long rowMask = (0xFFL >>> (8L - displayColumns));
+        final ArrayList<ArrayList<Register>> digitRegisters = new ArrayList<>(displays.length);
+        int maxDigitRegistersSize = 0;
         for (int display = 0; display < displays.length; display++) {
             long displayData = displays[display];
             long displayDiffMask = displayData ^ previousDisplays[display];
-            if (displayDiffMask > 0) {
+            final ArrayList<Register> displayDigitRegisters = new ArrayList<>(8);
+            digitRegisters.add(display, displayDigitRegisters);
+            if (displayDiffMask != 0) {
                 for (int row = 0; row < displayRows; row++) {
                     final RegisterAddress digitRegisterAddress = DigitRegister.DIGITS[row];
-                    final byte rowMaskDiff = (byte) (displayDiffMask & rowMask);
-                    if (rowMaskDiff > 0) {
-                        final byte rowDiff = (byte) (displayData & rowMask);
-                        final DigitRegister digitRegister = new DigitRegister(digitRegisterAddress, rowDiff);
-                        digitRegisters.add(digitRegister);
+                    final long rowMaskDiff = displayDiffMask & rowMask;
+                    if (rowMaskDiff != 0) {
+                        final long rowDiff = displayData & rowMask;
+                        final DigitRegister digitRegister = new DigitRegister(digitRegisterAddress, (byte)rowDiff);
+                        displayDigitRegisters.add(digitRegister);
                     }
                     displayData >>>= displayColumns;
                     displayDiffMask >>>= displayColumns;
+                }
+
+                if (displayDigitRegisters.size() > maxDigitRegistersSize) {
+                    maxDigitRegistersSize = displayDigitRegisters.size();
                 }
             }
         }
 
         anyChange = false;
         System.arraycopy(displays, 0, previousDisplays, 0, displays.length);
-        return execute((DigitRegister[])digitRegisters.toArray());
+
+        for (int step = 0; step < maxDigitRegistersSize; step++) {
+            final Register[] stepRegisters = new Register[displays.length];
+            for (int display = 0; display < displays.length; display++) {
+                final ArrayList<Register> displayRegisters = digitRegisters.get(display);
+                if (step < displayRegisters.size()) {
+                    stepRegisters[display] = displayRegisters.get(step);
+                } else {
+                    stepRegisters[display] = NoOpRegister.INSTANCE;
+                }
+            }
+            result.addAll(execute(stepRegisters));
+        }
+
+        return result;
     }
 
     @Override
     public boolean getLedStatus(final int row, final int column) {
-        final int displayIndex = getDisplayIndex(column, displayColumns);
-        final int bitPosition = getBitPosition(row, column, displayColumns);
+        final int displayIndex = (int)getDisplayIndex(column, displayColumns);
+        final int bitPosition = (int)getBitPosition(row, column, displayColumns);
         return getBit(displays[displayIndex], bitPosition);
     }
 
     @Override
     public void setLedStatus(final int row, final int column, final boolean ledOn) {
-        final int displayIndex = getDisplayIndex(column, displayColumns);
-        final int bitPosition = getBitPosition(row, column, displayColumns);
+        final int displayIndex = (int)getDisplayIndex(column, displayColumns);
+        final int bitPosition = (int)getBitPosition(row, column, displayColumns);
         displays[displayIndex] = setBit(displays[displayIndex], bitPosition, ledOn);
         anyChange = true;
     }

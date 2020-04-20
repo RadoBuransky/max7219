@@ -3,30 +3,30 @@ package com.buransky.max7219.impl;
 public class LedMatrixUtils {
     private LedMatrixUtils() {}
 
-    public static int getDisplayIndex(final int column, final int displayColumns) {
+    public static long getDisplayIndex(final long column, final long displayColumns) {
         return column / displayColumns;
     }
 
-    public static int getBitPosition(final int row, final int column, final int displayColumns) {
+    public static long getBitPosition(final long row, final long column, final long displayColumns) {
         return column + (row * displayColumns);
     }
 
-    public static int getRow(final int bitPosition, final int displayColumns) {
+    public static long getRow(final long bitPosition, final long displayColumns) {
         return bitPosition / displayColumns;
     }
 
-    public static int getColumn(final int bitPosition, final int displayColumns) {
+    public static long getColumn(final long bitPosition, final long displayColumns) {
         return bitPosition % displayColumns;
     }
 
-    public static boolean getBit(final long number, int position) {
-        return ((number >> position) & 1) == 1;
+    public static boolean getBit(final long number, final long position) {
+        return ((number >> position) & 1L) == 1L;
     }
 
-    public static long setBit(final long number, int position, boolean value) {
+    public static long setBit(final long number, final long position, final boolean value) {
         if (value) {
-            return position | (1 << position);
+            return number | (1L << position);
         }
-        return number & (~(1 << position));
+        return number & (~(1L << position));
     }
 }

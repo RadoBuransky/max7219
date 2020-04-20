@@ -1,5 +1,8 @@
 package com.buransky.max7219.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PacketSerialization {
     private PacketSerialization() {
     }
@@ -7,18 +10,15 @@ public class PacketSerialization {
     /**
      * packet[step][display]
      */
-    public static byte[] serialize(final short[][] packets) {
-        final byte[] result = new byte[packets.length*packets[0].length*16*3+2];
-        result[0] = 0b100;
-        int resultIndex = 0;
-        // For each time step
-        for (short[] step: packets) {
-            // For each display
-            for (short displayPacket: step) {
-                resultIndex = packetToClkDin(displayPacket, result, resultIndex);
-            }
+    public static List<Byte> serialize(final short[] packets) {
+        final ArrayList<Byte> result = new ArrayList<Byte>(packets.length*16*3+2);
+        result.add(0, (byte)0b100);
+        int resultIndex = 1;
+        // For each display
+        for (short displayPacket: packets) {
+            resultIndex = packetToClkDin(displayPacket, result, resultIndex);
         }
-        result[resultIndex] = 0b100;
+        result.add(resultIndex, (byte)0b100);
 
         return result;
     }
@@ -28,12 +28,12 @@ public class PacketSerialization {
      * CLK      = result & 0b010
      * DIN      = result & 0b001
      */
-    private static int packetToClkDin(final short packet, final byte[] dest, final int destIndex) {
+    private static int packetToClkDin(final short packet, final ArrayList<Byte> dest, final int destIndex) {
         short shiftedPacket = packet;
         for (int i = 0; i < 16; i++) {
-            dest[destIndex + i*3] = (byte)(shiftedPacket & 1); // DIN is either high or low
-            dest[destIndex + i*3 + 1] = 0b010; // CLK is high
-            dest[destIndex + i*3 + 2] = 0b000; // CLK is low
+            dest.add(destIndex + i*3, (byte)(shiftedPacket & 1)); // DIN is either high or low
+            dest.add(destIndex + i*3 + 1, (byte)0b010); // CLK is high
+            dest.add(destIndex + i*3 + 2, (byte)0b000); // CLK is low
             shiftedPacket >>>= 1;
         }
         return destIndex + 16*3;
