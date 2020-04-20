@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
 
 repositories {
@@ -12,10 +13,60 @@ version = '1.0.0-SNAPSHOT'
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
 }
 
 dependencies {
     implementation 'com.google.guava:guava:28.0-jre'
 
     testImplementation 'junit:junit:4.12'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'max7219'
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'MAX7219'
+                description = 'Java controller for MAX7219 - serially interfaced LED display driver'
+                url = 'https://github.com/RadoBuransky/max7219'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'RadoBuransky'
+                        name = 'Rado Buransky'
+                        email = 'radoburansky@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git@github.com:RadoBuransky/max7219.git'
+                    developerConnection = 'scm:git:git@github.com:RadoBuransky/max7219.git'
+                    url = 'https://github.com/RadoBuransky/max7219.git'
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            // change URLs to point to your repos, e.g. http://my.org/repo
+            def releasesRepoUrl = "$buildDir/repos/releases"
+            def snapshotsRepoUrl = "$buildDir/repos/snapshots"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+        }
+    }
 }
