@@ -1,5 +1,6 @@
 package com.buransky.max7219.impl;
 
+import com.buransky.max7219.Register;
 import com.buransky.max7219.SevenSegments;
 
 /**
@@ -13,13 +14,13 @@ public class SevenSegmentsAdapter implements SevenSegments {
     }
 
     @Override
-    public byte[] clearScreen() {
-        return ledMatrix.clearScreen();
+    public byte[] execute(final Register[] register) {
+        return ledMatrix.execute(register);
     }
 
     @Override
-    public byte[] setIntensity(int intensity) {
-        return ledMatrix.setIntensity(intensity);
+    public byte[] executeAll(Register register) {
+        return new byte[0];
     }
 
     @Override

@@ -6,8 +6,8 @@ import com.buransky.max7219.impl.SevenSegmentsAdapter;
 /**
  * Maxim Integrated MAX7219 chip library API. Can be used to control 8-digit 7-segment LED displays or LED matrix
  * displays. Cascading of unlimited number of chips is supported as well. Individual cascaded chips are referred to as
- * "displays". Consumer of this library is expected to execute returned pin commands using any library - typically Pi4j or WiringPi. This interface is stateful and not
- * thread-safe for performance reasons.
+ * "displays". Consumer of this library is expected to execute returned pin commands using any library - typically Pi4j
+ * or WiringPi. This interface is stateful and not thread-safe for performance reasons.
  */
 public interface Max7219 {
     /**
@@ -40,17 +40,18 @@ public interface Max7219 {
     }
 
     /**
-     * Clears all displays.
+     * Executes the provided command described as a pair of register address and register data on a single display.
+     * @param register Register address and data to be executed.
      * @return Ordered collection of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
      */
-    byte[] clearScreen();
+    byte[] execute(final Register[] register);
 
     /**
-     * Sets new intensity level for all displays. Legal values are from 0 (lowest) to 15 (highest).
-     * @param intensity New intensity level.
+     * Executes the provided command described as a pair of register address and register data on all displays.
+     * @param register Register address and data to be executed.
      * @return Ordered collection of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
      */
-    byte[] setIntensity(final int intensity);
+    byte[] executeAll(final Register register);
 
     /**
      * Draws current state (LED matrix or 7-segment display) and internally keeps reference to what has been drawn for
