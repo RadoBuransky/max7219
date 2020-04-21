@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.buransky.max7219.impl.LedMatrixUtils.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -59,9 +58,9 @@ public class FastLedMatrix implements LedMatrix {
         checkNotNull(registers);
         checkArgument(registers.length == displays.length);
 
-        final short[] packets = new short[displays.length];
+        final ArrayList<Short> packets = new ArrayList<Short>(displays.length);
         for (int i = 0; i < displays.length; i++) {
-            packets[i] = registerToPacket(registers[i]);
+            packets.add(i, registerToPacket(registers[i]));
         }
 
         return PacketSerialization.serialize(packets);
@@ -131,20 +130,39 @@ public class FastLedMatrix implements LedMatrix {
 
     @Override
     public boolean getLedStatus(final int row, final int column) {
-        final int displayIndex = (int)getDisplayIndex(column, displayColumns);
-        final int bitPosition = (int)getBitPosition(row, column, displayColumns);
+        final int displayIndex = (int)getDisplayIndex(column);
+        final int bitPosition = (int)getBitPosition(row, column);
         return getBit(displays[displayIndex], bitPosition);
     }
 
     @Override
     public void setLedStatus(final int row, final int column, final boolean ledOn) {
-        final int displayIndex = (int)getDisplayIndex(column, displayColumns);
-        final int bitPosition = (int)getBitPosition(row, column, displayColumns);
+        final int displayIndex = (int)getDisplayIndex(column);
+        final int bitPosition = (int)getBitPosition(row, column);
         displays[displayIndex] = setBit(displays[displayIndex], bitPosition, ledOn);
         anyChange = true;
     }
 
     private short registerToPacket(final Register register) {
         return (short)(((register.getAddress() & 0x0F) << 8) | (register.getData()));
+    }
+
+    private long getDisplayIndex(final long column) {
+        return column / displayColumns;
+    }
+
+    private long getBitPosition(final long row, final long column) {
+        return column + (row * displayColumns);
+    }
+
+    private boolean getBit(final long number, final long position) {
+        return ((number >> position) & 1L) == 1L;
+    }
+
+    private long setBit(final long number, final long position, final boolean value) {
+        if (value) {
+            return number | (1L << position);
+        }
+        return number & (~(1L << position));
     }
 }

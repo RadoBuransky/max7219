@@ -42,21 +42,21 @@ public interface Max7219 {
     /**
      * Executes the provided command described as a pair of register address and register data on a single display.
      * @param register Register address and data to be executed.
-     * @return Ordered collection of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
+     * @return Ordered sequence of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
      */
     Iterable<Byte> execute(final Register[] register);
 
     /**
      * Executes the provided command described as a pair of register address and register data on all displays.
      * @param register Register address and data to be executed.
-     * @return Ordered collection of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
+     * @return Ordered sequence of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
      */
     Iterable<Byte> executeAll(final Register register);
 
     /**
      * Draws current state (LED matrix or 7-segment display) and internally keeps reference to what has been drawn for
      * the next call so that it can compute difference for optimization reasons.
-     * @return Ordered collection of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
+     * @return Ordered sequence of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
      */
     Iterable<Byte> draw();
 }
