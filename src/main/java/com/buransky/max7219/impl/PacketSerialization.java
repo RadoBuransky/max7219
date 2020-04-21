@@ -20,7 +20,7 @@ class PacketSerialization {
         final ArrayList<Byte> result = new ArrayList<Byte>(resultSize);
         while(result.size() < resultSize) result.add((byte)0);
 
-        result.set(0, (byte)0b100); // LOAD/CS = high, CLK = low, DIN = low
+        result.set(0, (byte)0b000); // LOAD/CS = low, CLK = low, DIN = low
         int resultIndex = 1;
         for (short displayPacket: packets) {
             resultIndex = packetToClkDin(displayPacket, result, resultIndex);

@@ -54,7 +54,7 @@ public class PacketSerializationTest {
     }
 
     private void assertStartAndEnd(final List<Byte> result) {
-        assertEquals((byte)0b100, (byte)result.get(0));
+        assertEquals((byte)0b000, (byte)result.get(0));
         assertEquals((byte)0b100, (byte)result.get(result.size() - 1));
     }
 
