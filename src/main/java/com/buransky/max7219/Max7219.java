@@ -20,6 +20,7 @@ public interface Max7219 {
      * @param displayColumns Number of columns in a single display in the LED matrix. Typically 8.
      * @param displaysVertically Number of MAX7219 chips cascaded in vertical direction. Typically 1.
      * @param displaysHorizontally Number of MAX7219 chips cascaded in horizontal direction. Typically 4.
+     * @return LedMatrix instance.
      */
     static LedMatrix initLedMatrix(final int displayRows,
                                    final int displayColumns,
@@ -34,6 +35,7 @@ public interface Max7219 {
      * @param digitSegments Number of segments of a single digit. Typically 7.
      * @param displayDigits Number of digits in a single display. Typically 8 I guess.
      * @param displayCount Number of MAX7219 cascaded together.
+     * @return SevenSegments instance.
      */
     static SevenSegments initSevenSegments(final int digitSegments, final int displayDigits, final int displayCount) {
         return new SevenSegmentsAdapter(digitSegments, displayDigits, displayCount);
