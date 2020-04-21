@@ -35,8 +35,9 @@ class PacketSerialization {
     private static int packetToClkDin(final short packet, final ArrayList<Byte> dest, final int destIndex) {
         short shiftedPacket = packet;
         for (int i = 15; i >= 0; i--) {
-            dest.set(destIndex + i*3, (byte)(shiftedPacket & 1)); // DIN is either high or low
-            dest.set(destIndex + i*3 + 1, (byte)0b010); // CLK = high
+            final byte din = (byte)(shiftedPacket & 1);
+            dest.set(destIndex + i*3, din); // DIN is either high or low
+            dest.set(destIndex + i*3 + 1, (byte)(din | 0b010)); // CLK = high
             dest.set(destIndex + i*3 + 2, (byte)0b000); // CLK = low
             shiftedPacket >>>= 1;
         }
