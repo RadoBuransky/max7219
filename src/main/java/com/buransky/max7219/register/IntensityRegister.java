@@ -9,7 +9,7 @@ public class IntensityRegister implements Register {
     private static final RegisterAddress registerAddress = RegisterAddress.Intensity;
     private final byte data;
 
-    IntensityRegister(final byte data) {
+    public IntensityRegister(final byte data) {
         this.data = data;
     }
 
