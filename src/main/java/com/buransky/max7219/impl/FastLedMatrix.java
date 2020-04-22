@@ -50,6 +50,21 @@ public class FastLedMatrix implements LedMatrix {
     }
 
     @Override
+    public boolean getLedStatus(final int row, final int column) {
+        final int displayIndex = (int)getDisplayIndex(row, column);
+        final int bitPosition = (int)getBitPosition(row % displayRows, column % displayColumns);
+        return getBit(displays[displayIndex], bitPosition);
+    }
+
+    @Override
+    public void setLedStatus(final int row, final int column, final boolean ledOn) {
+        final int displayIndex = (int)getDisplayIndex(row, column);
+        final int bitPosition = (int)getBitPosition(row % displayRows, column % displayColumns);
+        displays[displayIndex] = setBit(displays[displayIndex], bitPosition, ledOn);
+        anyChange = true;
+    }
+
+    @Override
     public List<PinState> reset() {
         final ArrayList<PinState> result = new ArrayList<>();
 
@@ -159,27 +174,12 @@ public class FastLedMatrix implements LedMatrix {
         return stepRegisters;
     }
 
-    @Override
-    public boolean getLedStatus(final int row, final int column) {
-        final int displayIndex = (int)getDisplayIndex(column);
-        final int bitPosition = (int)getBitPosition(row, column);
-        return getBit(displays[displayIndex], bitPosition);
-    }
-
-    @Override
-    public void setLedStatus(final int row, final int column, final boolean ledOn) {
-        final int displayIndex = (int)getDisplayIndex(column);
-        final int bitPosition = (int)getBitPosition(row, column);
-        displays[displayIndex] = setBit(displays[displayIndex], bitPosition, ledOn);
-        anyChange = true;
-    }
-
     private short registerToPacket(final Register register) {
         return (short)(((register.getAddress() & 0x0F) << 8) | (register.getData()));
     }
 
-    private long getDisplayIndex(final long column) {
-        return column / displayColumns;
+    private long getDisplayIndex(final int row, final long column) {
+        return (row / displayRows) * displaysHorizontally + (column / displayColumns);
     }
 
     private long getBitPosition(final long row, final long column) {

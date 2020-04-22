@@ -127,12 +127,24 @@ public class FastLedMatrixTest {
     }
 
     @Test
+    public void testSetLedStatus() {
+        // Execute
+        fastLedMatrix.setLedStatus(0, 15, true);
+
+        // Assert
+        assertEquals(0x0L, fastLedMatrix.displays[0]);
+        assertEquals(0x80L, fastLedMatrix.displays[1]);
+        assertEquals(0x0L, fastLedMatrix.displays[2]);
+        assertEquals(0x0L, fastLedMatrix.displays[3]);
+    }
+
+    @Test
     public void testGetLedStatus() {
         // Prepare
-        fastLedMatrix.setLedStatus(0, 0, true);
+        fastLedMatrix.setLedStatus(7, 15, true);
 
         // Execute
-        final boolean result = fastLedMatrix.getLedStatus(0, 0);
+        final boolean result = fastLedMatrix.getLedStatus(7, 15);
 
         // Assert
         assertTrue(result);
