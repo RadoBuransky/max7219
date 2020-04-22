@@ -16,17 +16,17 @@ public class SevenSegmentsAdapter implements SevenSegments {
     }
 
     @Override
-    public List<Byte> execute(final Register[] register) {
+    public List<BitChange> execute(final Register[] register) {
         return ledMatrix.execute(register);
     }
 
     @Override
-    public List<Byte> executeAll(Register register) {
+    public List<BitChange> executeAll(Register register) {
         return ledMatrix.executeAll(register);
     }
 
     @Override
-    public List<Byte> draw() {
+    public List<BitChange> draw() {
         return ledMatrix.draw();
     }
 

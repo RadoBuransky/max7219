@@ -1,5 +1,7 @@
 package com.buransky.max7219.impl;
 
+import com.buransky.max7219.Max7219;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,36 +13,33 @@ class PacketSerialization {
     }
 
     /**
-     * Transforms list of 16-bit packets (one for each display) into ordered sequence of LOAD/CS, CLK and DIN triplets.
+     * Transforms list of 16-bit packets (one for each display) into bit state changes.
      * @param packets One 16-bit packet for each display.
-     * @return Ordered sequence of 3-bit triplets. Bit0 is LOAD/CS value, Bit1 is CLK and Bit2 is DIN.
+     * @return Ordered sequence bit state changes.
      */
-    static List<Byte> serialize(final List<Short> packets) {
-        final int resultSize = packets.size()*16*3+2;
-        final ArrayList<Byte> result = new ArrayList<Byte>(resultSize);
-        while(result.size() < resultSize) result.add((byte)0);
-
-        result.set(0, (byte)0b000); // LOAD/CS = low, CLK = low, DIN = low
-        int resultIndex = 1;
-        for (short displayPacket: packets) {
-            resultIndex = packetToClkDin(displayPacket, result, resultIndex);
-        }
-        result.set(resultIndex, (byte)0b100); // LOAD/CS = high, CLK = low, DIN = low
+    static List<Max7219.BitChange> serialize(final List<Short> packets) {
+        final ArrayList<Max7219.BitChange> result = new ArrayList<>(packets.size()*16*3+2);
+        result.add(Max7219.BitChange.LOADCS_LOW);
+        packets.forEach(packet -> packetToClkDin(packet, result));
+        result.add(Max7219.BitChange.LOADCS_HIGH);
         return result;
     }
 
     /**
-     * Transforms single 16-bit into ordered sequence of LOAD/CS, CLK and DIN triplets. Result length = 16*3 = 48 bytes.
+     * Transforms single 16-bit into bit state changes. Max result length = 16*3 = 48 bytes.
      */
-    private static int packetToClkDin(final short packet, final ArrayList<Byte> dest, final int destIndex) {
+    private static void packetToClkDin(final short packet, final ArrayList<Max7219.BitChange> dest) {
         short shiftedPacket = packet;
-        for (int i = 15; i >= 0; i--) {
-            final byte din = (byte)(shiftedPacket & 1);
-            dest.set(destIndex + i*3, din); // DIN is either high or low
-            dest.set(destIndex + i*3 + 1, (byte)(din | 0b010)); // CLK = high
-            dest.set(destIndex + i*3 + 2, (byte)0b000); // CLK = low
-            shiftedPacket >>>= 1;
+        short previousDin = -1;
+        for (int i = 0; i < 16; i++) {
+            final short din = (short)(shiftedPacket & 0x8000);
+            if (din != previousDin) {
+                dest.add((din != 0) ? Max7219.BitChange.DIN_HIGH : Max7219.BitChange.DIN_LOW);
+                previousDin = din;
+            }
+            dest.add(Max7219.BitChange.CLK_HIGH);
+            dest.add(Max7219.BitChange.CLK_LOW);
+            shiftedPacket <<= 1;
         }
-        return destIndex + 16*3;
     }
 }

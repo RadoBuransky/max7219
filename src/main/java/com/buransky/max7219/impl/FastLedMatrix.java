@@ -54,7 +54,7 @@ public class FastLedMatrix implements LedMatrix {
     }
 
     @Override
-    public List<Byte> execute(final Register[] registers) {
+    public List<BitChange> execute(final Register[] registers) {
         checkNotNull(registers);
         checkArgument(registers.length == displays.length);
 
@@ -67,7 +67,7 @@ public class FastLedMatrix implements LedMatrix {
     }
 
     @Override
-    public List<Byte> executeAll(final Register register) {
+    public List<BitChange> executeAll(final Register register) {
         checkNotNull(register);
         final Register[] registers = new Register[displays.length];
         Arrays.fill(registers, register);
@@ -75,8 +75,8 @@ public class FastLedMatrix implements LedMatrix {
     }
 
     @Override
-    public List<Byte> draw() {
-        final ArrayList<Byte> result = new ArrayList<>();
+    public List<BitChange> draw() {
+        final ArrayList<BitChange> result = new ArrayList<>();
 
         if (!anyChange) {
             return result;

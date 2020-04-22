@@ -1,5 +1,6 @@
 package com.buransky.max7219.impl;
 
+import com.buransky.max7219.Max7219.BitChange;
 import com.buransky.max7219.Register;
 import com.buransky.max7219.register.ShutdownRegister;
 import org.junit.Assert;
@@ -32,17 +33,17 @@ public class FastLedMatrixTest {
         matrix.setLedStatus(0, 0, true);
 
         // Execute
-        final List<Byte> result = matrix.draw();
+        final List<BitChange> result = matrix.draw();
 
         // Assert
         Assert.assertNotNull(result);
-        Assert.assertEquals(50, result.size());
+        Assert.assertEquals(38, result.size());
     }
 
     @Test
     public void testDrawNothing() {
         // Execute
-        final List<Byte> result = fastLedMatrix.draw();
+        final List<BitChange> result = fastLedMatrix.draw();
 
         // Assert
         Assert.assertEquals(0, result.size());
@@ -54,11 +55,11 @@ public class FastLedMatrixTest {
         fastLedMatrix.setLedStatus(0, 0, true);
 
         // Execute
-        final List<Byte> result = fastLedMatrix.draw();
+        final List<BitChange> result = fastLedMatrix.draw();
 
         // Assert
         Assert.assertNotNull(result);
-        Assert.assertEquals(194, result.size());
+        Assert.assertEquals(137, result.size());
     }
 
     @Test
@@ -69,7 +70,7 @@ public class FastLedMatrixTest {
         fastLedMatrix.setLedStatus(0, 0, true);
 
         // Execute
-        final List<Byte> result = fastLedMatrix.draw();
+        final List<BitChange> result = fastLedMatrix.draw();
 
         // Assert
         Assert.assertEquals(0, result.size());
@@ -82,7 +83,7 @@ public class FastLedMatrixTest {
                 DISPLAY_COLUMNS*DISPLAYS_HORIZONTALLY - 1, true);
 
         // Execute
-        final List<Byte> result = fastLedMatrix.draw();
+        final List<BitChange> result = fastLedMatrix.draw();
 
         // Assert
         Assert.assertNotNull(result);
@@ -97,7 +98,7 @@ public class FastLedMatrixTest {
         }
 
         // Execute
-        final List<Byte> result = fastLedMatrix.draw();
+        final List<BitChange> result = fastLedMatrix.draw();
 
         // Assert
         Assert.assertNotNull(result);
@@ -110,7 +111,7 @@ public class FastLedMatrixTest {
         final Register register = ShutdownRegister.NormalOperation;
 
         // Execute
-        final List<Byte> result = fastLedMatrix.executeAll(register);
+        final List<BitChange> result = fastLedMatrix.executeAll(register);
 
         // Assert
         Assert.assertNotNull(result);
@@ -138,7 +139,7 @@ public class FastLedMatrixTest {
 
         // Execute
         fastLedMatrix.setLedStatus(0, 0, false);
-        final List<Byte> result = fastLedMatrix.draw();
+        final List<BitChange> result = fastLedMatrix.draw();
 
         // Assert
         Assert.assertNotNull(result);
@@ -146,7 +147,7 @@ public class FastLedMatrixTest {
     }
 
     private void assertExpectedResultSize(final int expectedStepsCount, final int displayCount, final int resultSize) {
-        Assert.assertEquals(expectedStepsCount*(displayCount*16*3 + 2), resultSize);
+        Assert.assertTrue(expectedStepsCount*(displayCount*16*3 + 2) >= resultSize);
 
     }
 }
