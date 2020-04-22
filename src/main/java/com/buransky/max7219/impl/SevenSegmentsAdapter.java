@@ -3,6 +3,7 @@ package com.buransky.max7219.impl;
 import com.buransky.max7219.Register;
 import com.buransky.max7219.SevenSegments;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -16,17 +17,22 @@ public class SevenSegmentsAdapter implements SevenSegments {
     }
 
     @Override
-    public List<BitChange> execute(final Register[] register) {
+    public Iterable<PinState> reset() {
+        throw new UnsupportedOperationException("TODO");
+    }
+
+    @Override
+    public List<PinState> execute(final Collection<Register> register) {
         return ledMatrix.execute(register);
     }
 
     @Override
-    public List<BitChange> executeAll(Register register) {
+    public List<PinState> executeAll(Register register) {
         return ledMatrix.executeAll(register);
     }
 
     @Override
-    public List<BitChange> draw() {
+    public List<PinState> draw() {
         return ledMatrix.draw();
     }
 

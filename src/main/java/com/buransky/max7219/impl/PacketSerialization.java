@@ -17,30 +17,30 @@ class PacketSerialization {
      * @param packets One 16-bit packet for each display.
      * @return Ordered sequence bit state changes.
      */
-    static List<Max7219.BitChange> serialize(final List<Short> packets) {
-        final ArrayList<Max7219.BitChange> result = new ArrayList<>(packets.size()*16*3+2);
-        result.add(Max7219.BitChange.LOADCS_LOW);
+    static List<Max7219.PinState> serialize(final List<Short> packets) {
+        final ArrayList<Max7219.PinState> result = new ArrayList<>(packets.size()*16*3+2);
+        result.add(Max7219.PinState.LOADCS_LOW);
         short previousDin = -1;
         for (int i = packets.size() - 1; i >= 0; i--) {
             previousDin = packetToClkDin(packets.get(i), result, previousDin);
         }
-        result.add(Max7219.BitChange.LOADCS_HIGH);
+        result.add(Max7219.PinState.LOADCS_HIGH);
         return result;
     }
 
     /**
      * Transforms single 16-bit into bit state changes. Max result length = 16*3 = 48 bytes.
      */
-    private static short packetToClkDin(final short packet, final ArrayList<Max7219.BitChange> dest, short previousDin) {
+    private static short packetToClkDin(final short packet, final ArrayList<Max7219.PinState> dest, short previousDin) {
         short shiftedPacket = packet;
         for (int i = 0; i < 16; i++) {
             final short din = (short)(shiftedPacket & 0x8000);
             if (din != previousDin) {
-                dest.add((din != 0) ? Max7219.BitChange.DIN_HIGH : Max7219.BitChange.DIN_LOW);
+                dest.add((din != 0) ? Max7219.PinState.DIN_HIGH : Max7219.PinState.DIN_LOW);
                 previousDin = din;
             }
-            dest.add(Max7219.BitChange.CLK_HIGH);
-            dest.add(Max7219.BitChange.CLK_LOW);
+            dest.add(Max7219.PinState.CLK_HIGH);
+            dest.add(Max7219.PinState.CLK_LOW);
             shiftedPacket <<= 1;
         }
         return previousDin;

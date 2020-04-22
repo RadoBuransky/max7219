@@ -2,13 +2,9 @@ package com.buransky.max7219.impl;
 
 import com.buransky.max7219.LedMatrix;
 import com.buransky.max7219.Register;
-import com.buransky.max7219.register.DigitRegister;
-import com.buransky.max7219.register.NoOpRegister;
-import com.buransky.max7219.register.RegisterAddress;
+import com.buransky.max7219.register.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -54,78 +50,113 @@ public class FastLedMatrix implements LedMatrix {
     }
 
     @Override
-    public List<BitChange> execute(final Register[] registers) {
-        checkNotNull(registers);
-        checkArgument(registers.length == displays.length);
+    public List<PinState> reset() {
+        final ArrayList<PinState> result = new ArrayList<>();
 
-        final ArrayList<Short> packets = new ArrayList<Short>(displays.length);
-        for (int i = 0; i < displays.length; i++) {
-            packets.add(i, registerToPacket(registers[i]));
+        // Initialize control registers
+        result.addAll(executeAll(DisplayTestRegister.NormalOperation));
+        result.addAll(executeAll(DecodeModeRegister.NoDecode));
+        result.addAll(executeAll(ScanLimitRegister.Digits0to7));
+        result.addAll(executeAll(new IntensityRegister((short)0)));
+        result.addAll(executeAll(ShutdownRegister.NormalOperation));
+
+        // Clear screen
+        Arrays.fill(displays, 0);
+        Arrays.fill(previousDisplays, -1);
+        anyChange = true;
+        result.addAll(draw());
+
+        return result;
+    }
+
+    @Override
+    public List<PinState> execute(final Collection<Register> registers) {
+        checkNotNull(registers);
+        checkArgument(registers.size() == displays.length);
+
+        final ArrayList<Short> packets = new ArrayList<>(displays.length);
+        for (final Register register : registers) {
+            packets.add(registerToPacket(register));
         }
 
         return PacketSerialization.serialize(packets);
     }
 
     @Override
-    public List<BitChange> executeAll(final Register register) {
+    public List<PinState> executeAll(final Register register) {
         checkNotNull(register);
-        final Register[] registers = new Register[displays.length];
-        Arrays.fill(registers, register);
-        return execute(registers);
+        return execute(Collections.nCopies(displays.length, register));
     }
 
     @Override
-    public List<BitChange> draw() {
-        final ArrayList<BitChange> result = new ArrayList<>();
-
+    public List<PinState> draw() {
         if (!anyChange) {
-            return result;
+            return Collections.EMPTY_LIST;
         }
 
-        final long rowMask = (0xFFL >>> (8L - displayColumns));
-        final ArrayList<ArrayList<Register>> digitRegisters = new ArrayList<>(displays.length);
-        int maxDigitRegistersSize = 0;
-        for (int display = 0; display < displays.length; display++) {
-            long displayData = displays[display];
-            long displayDiffMask = displayData ^ previousDisplays[display];
-            final ArrayList<Register> displayDigitRegisters = new ArrayList<>(8);
-            digitRegisters.add(display, displayDigitRegisters);
-            if (displayDiffMask != 0) {
-                for (int row = 0; row < displayRows; row++) {
-                    final RegisterAddress digitRegisterAddress = DigitRegister.DIGITS[row];
-                    final long rowMaskDiff = displayDiffMask & rowMask;
-                    if (rowMaskDiff != 0) {
-                        final long rowDiff = displayData & rowMask;
-                        final DigitRegister digitRegister = new DigitRegister(digitRegisterAddress, (short)rowDiff);
-                        displayDigitRegisters.add(digitRegister);
-                    }
-                    displayData >>>= displayColumns;
-                    displayDiffMask >>>= displayColumns;
-                }
-
-                if (displayDigitRegisters.size() > maxDigitRegistersSize) {
-                    maxDigitRegistersSize = displayDigitRegisters.size();
-                }
-            }
-        }
-
+        final ArrayList<List<DigitRegister>> digitRegisters = new ArrayList<>(displays.length);
+        final int stepCount = getDigitRegisters(digitRegisters);
         anyChange = false;
         System.arraycopy(displays, 0, previousDisplays, 0, displays.length);
+        return executeDigitRegisters(digitRegisters, stepCount);
+    }
 
-        for (int step = 0; step < maxDigitRegistersSize; step++) {
-            final Register[] stepRegisters = new Register[displays.length];
-            for (int display = 0; display < displays.length; display++) {
-                final ArrayList<Register> displayRegisters = digitRegisters.get(display);
-                if (step < displayRegisters.size()) {
-                    stepRegisters[display] = displayRegisters.get(step);
-                } else {
-                    stepRegisters[display] = NoOpRegister.INSTANCE;
-                }
+    private int getDigitRegisters(final List<List<DigitRegister>> digitRegisters) {
+        int stepCount = 0;
+        for (int display = 0; display < displays.length; display++) {
+            final List<DigitRegister> displayDigitRegisters = getDisplayDigitRegisters(display);
+            if (displayDigitRegisters.size() > stepCount) {
+                stepCount = displayDigitRegisters.size();
             }
-            result.addAll(execute(stepRegisters));
+            digitRegisters.add(display, displayDigitRegisters);
         }
+        return stepCount;
+    }
 
+    private List<DigitRegister> getDisplayDigitRegisters(final int display) {
+        long displayData = displays[display];
+        long displayDiffMask = displayData ^ previousDisplays[display];
+        if (displayDiffMask == 0) {
+            return Collections.EMPTY_LIST;
+        }
+        return getDisplayDigitRegisters(displayData, displayDiffMask);
+    }
+
+    private List<DigitRegister> getDisplayDigitRegisters(long displayData, long displayDiffMask) {
+        final long rowMask = (0xFFL >>> (8L - displayColumns));
+        final ArrayList<DigitRegister> result = new ArrayList<>(8);
+        for (int row = 0; row < displayRows; row++) {
+            if ((displayDiffMask & rowMask) != 0) {
+                result.add(new DigitRegister(DigitRegister.DIGITS[row], (short)(displayData & rowMask)));
+            }
+            displayData >>>= displayColumns;
+            displayDiffMask >>>= displayColumns;
+        }
         return result;
+    }
+
+    private List<PinState> executeDigitRegisters(final ArrayList<List<DigitRegister>> digitRegisters,
+                                                 final int stepCount) {
+        final ArrayList<PinState> result = new ArrayList<>();
+        for (int step = 0; step < stepCount; step++) {
+            final Collection<Register> stepRegisters = getStepRegisters(digitRegisters, step);
+            final List<PinState> stepPinStates = execute(stepRegisters);
+            result.addAll(stepPinStates);
+        }
+        return result;
+    }
+
+    private Collection<Register> getStepRegisters(final ArrayList<List<DigitRegister>> digitRegisters, final int step) {
+        final Collection<Register> stepRegisters = new ArrayList<>(displays.length);
+        for (int display = 0; display < displays.length; display++) {
+            final List<DigitRegister> displayRegisters = digitRegisters.get(display);
+            if (step < displayRegisters.size()) {
+                stepRegisters.add(displayRegisters.get(step));
+            } else {
+                stepRegisters.add(NoOpRegister.INSTANCE);
+            }
+        }
+        return stepRegisters;
     }
 
     @Override
