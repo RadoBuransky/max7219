@@ -96,7 +96,7 @@ public class FastLedMatrix implements LedMatrix {
                     final long rowMaskDiff = displayDiffMask & rowMask;
                     if (rowMaskDiff != 0) {
                         final long rowDiff = displayData & rowMask;
-                        final DigitRegister digitRegister = new DigitRegister(digitRegisterAddress, (byte)rowDiff);
+                        final DigitRegister digitRegister = new DigitRegister(digitRegisterAddress, (short)rowDiff);
                         displayDigitRegisters.add(digitRegister);
                     }
                     displayData >>>= displayColumns;

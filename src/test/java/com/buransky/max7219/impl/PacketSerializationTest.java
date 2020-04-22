@@ -1,6 +1,7 @@
 package com.buransky.max7219.impl;
 
 import com.buransky.max7219.Max7219.BitChange;
+import com.buransky.max7219.register.DigitRegister;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -41,10 +42,26 @@ public class PacketSerializationTest {
         // Assert
         final List<Short> din = assertCommon(result, 4);
         assertEquals(4, din.size());
-        assertEquals((short)0x0C00, (short)din.get(0)); // 0000 1100 0000 0000
-        assertEquals((short)0x0F01, (short)din.get(1)); // 0000 1111 0000 0001‬
-        assertEquals((short)0x060B, (short)din.get(2)); // 0000 0110 0000 1011
-        assertEquals((short)0x0000, (short)din.get(3)); // 0000 0000 0000 0000
+        assertEquals((short)0x0000, (short)din.get(0)); // 0000 0000 0000 0000
+        assertEquals((short)0x060B, (short)din.get(1)); // 0000 0110 0000 1011
+        assertEquals((short)0x0F01, (short)din.get(2)); // 0000 1111 0000 0001‬
+        assertEquals((short)0x0C00, (short)din.get(3)); // 0000 1100 0000 0000
+    }
+
+    @Test
+    public void testDrawingSinglePoint() {
+        final List<Short> packets = Arrays.asList((short)0x0807, (short)0x0000, (short)0x0000, (short)0x0000);
+
+        // Execute
+        final List<BitChange> result = PacketSerialization.serialize(packets);
+
+        // Assert
+        final List<Short> din = assertCommon(result, 4);
+        assertEquals(4, din.size());
+        assertEquals((short)0x0807, (short)din.get(0)); // 0000 0000 0000 0000
+        assertEquals((short)0x0000, (short)din.get(1)); // 0000 0110 0000 1011
+        assertEquals((short)0x0000, (short)din.get(2)); // 0000 1111 0000 0001‬
+        assertEquals((short)0x0000, (short)din.get(3)); // 0000 1100 0000 0000
     }
 
     private List<Short> assertCommon(final List<BitChange> result, final int displayCount) {
@@ -58,12 +75,14 @@ public class PacketSerializationTest {
         assertEquals(BitChange.LOADCS_HIGH, result.get(result.size() - 1));
     }
 
-    private List<Short> assertData(final List<BitChange> result, final int displayCount) {
+    static List<Short> assertData(final List<BitChange> result, final int displayCount) {
         final ArrayList<Short> dins = new ArrayList<>();
+        while(dins.size() < displayCount) dins.add((short)0);
+
         int resultIndex = 1;
-        for (int display = 0; display < displayCount; display++) {
+        short dinBit = -1;
+        for (int display = displayCount - 1; display >= 0; display--) {
             short din = 0;
-            short dinBit = -1;
             for (int i = 0; i < DIN_BITS; i++) {
                 final BitChange value0 = result.get(resultIndex++);
                 switch (value0) {
@@ -87,7 +106,7 @@ public class PacketSerializationTest {
                 din <<= 1;
                 din |= dinBit;
             }
-            dins.add(din);
+            dins.set(display, din);
         }
         return dins;
     }

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static com.buransky.max7219.impl.PacketSerializationTest.assertData;
 import static org.junit.Assert.assertTrue;
 
 public class FastLedMatrixTest {
@@ -52,14 +53,20 @@ public class FastLedMatrixTest {
     @Test
     public void testDrawSingleDotOnTheFirstDisplay() {
         // Prepare
-        fastLedMatrix.setLedStatus(0, 0, true);
+        fastLedMatrix.setLedStatus(7, 7, true);
 
         // Execute
         final List<BitChange> result = fastLedMatrix.draw();
 
         // Assert
         Assert.assertNotNull(result);
-        Assert.assertEquals(137, result.size());
+        Assert.assertEquals(135, result.size());
+        final List<Short> data = assertData(result, 4);
+        Assert.assertEquals(4, data.size());
+        Assert.assertEquals(0x0880, (short)data.get(0));
+        Assert.assertEquals(0x0000, (short)data.get(1));
+        Assert.assertEquals(0x0000, (short)data.get(2));
+        Assert.assertEquals(0x0000, (short)data.get(3));
     }
 
     @Test
@@ -148,6 +155,5 @@ public class FastLedMatrixTest {
 
     private void assertExpectedResultSize(final int expectedStepsCount, final int displayCount, final int resultSize) {
         Assert.assertTrue(expectedStepsCount*(displayCount*16*3 + 2) >= resultSize);
-
     }
 }

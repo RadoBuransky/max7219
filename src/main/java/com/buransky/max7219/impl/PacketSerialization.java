@@ -20,8 +20,9 @@ class PacketSerialization {
     static List<Max7219.BitChange> serialize(final List<Short> packets) {
         final ArrayList<Max7219.BitChange> result = new ArrayList<>(packets.size()*16*3+2);
         result.add(Max7219.BitChange.LOADCS_LOW);
+        short previousDin = -1;
         for (int i = packets.size() - 1; i >= 0; i--) {
-            packetToClkDin(packets.get(i), result);
+            previousDin = packetToClkDin(packets.get(i), result, previousDin);
         }
         result.add(Max7219.BitChange.LOADCS_HIGH);
         return result;
@@ -30,9 +31,8 @@ class PacketSerialization {
     /**
      * Transforms single 16-bit into bit state changes. Max result length = 16*3 = 48 bytes.
      */
-    private static void packetToClkDin(final short packet, final ArrayList<Max7219.BitChange> dest) {
+    private static short packetToClkDin(final short packet, final ArrayList<Max7219.BitChange> dest, short previousDin) {
         short shiftedPacket = packet;
-        short previousDin = -1;
         for (int i = 0; i < 16; i++) {
             final short din = (short)(shiftedPacket & 0x8000);
             if (din != previousDin) {
@@ -43,5 +43,6 @@ class PacketSerialization {
             dest.add(Max7219.BitChange.CLK_LOW);
             shiftedPacket <<= 1;
         }
+        return previousDin;
     }
 }

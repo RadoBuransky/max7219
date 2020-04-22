@@ -7,19 +7,19 @@ import com.buransky.max7219.Register;
  */
 public class IntensityRegister implements Register {
     private static final RegisterAddress registerAddress = RegisterAddress.Intensity;
-    private final byte data;
+    private final short data;
 
-    public IntensityRegister(final byte data) {
+    public IntensityRegister(final short data) {
         this.data = data;
     }
 
     @Override
-    public byte getAddress() {
+    public short getAddress() {
         return registerAddress.getAddress();
     }
 
     @Override
-    public byte getData() {
+    public short getData() {
         return data;
     }
 }

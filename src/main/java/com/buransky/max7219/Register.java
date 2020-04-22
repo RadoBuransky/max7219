@@ -8,11 +8,11 @@ public interface Register {
      * 4 bits - from D11 down to D8.
      * @return Address value.
      */
-    byte getAddress();
+    short getAddress();
 
     /**
      * 8 bits - from D7 (MSG) down to D0 (LSB)
      * @return Address value.
      */
-    byte getData();
+    short getData();
 }

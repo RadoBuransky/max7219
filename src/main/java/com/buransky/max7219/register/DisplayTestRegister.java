@@ -6,22 +6,22 @@ import com.buransky.max7219.Register;
  * Table 10. Display-Test Register Format (Address (Hex) = 0xXF)
  */
 public enum DisplayTestRegister implements Register {
-    NormalOperation((byte)0x00),
-    DisplayTestMode((byte)0x01);
+    NormalOperation((short)0x00),
+    DisplayTestMode((short)0x01);
 
     private static final RegisterAddress registerAddress = RegisterAddress.DisplayTest;
-    private final byte data;
+    private final short data;
 
-    DisplayTestRegister(final byte data) {
+    DisplayTestRegister(final short data) {
         this.data = data;
     }
 
     @Override
-    public byte getAddress() {
+    public short getAddress() {
         return registerAddress.getAddress();
     }
 
-    public byte getData() {
+    public short getData() {
         return data;
     }
 }

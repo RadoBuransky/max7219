@@ -10,12 +10,12 @@ public class NoOpRegister implements Register {
     }
 
     @Override
-    public byte getAddress() {
+    public short getAddress() {
         return registerAddress.getAddress();
     }
 
     @Override
-    public byte getData() {
+    public short getData() {
         return 0;
     }
 }
