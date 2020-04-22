@@ -41,10 +41,10 @@ public class PacketSerializationTest {
         // Assert
         final List<Short> din = assertCommon(result, 4);
         assertEquals(4, din.size());
-        assertEquals((short)0x0000, (short)din.get(0)); // 0000 0000 0000 0000
-        assertEquals((short)0x060B, (short)din.get(1)); // 0000 0110 0000 1011‬
-        assertEquals((short)0x0F01, (short)din.get(2)); // 0000 1111 0000 0001‬
-        assertEquals((short)0x0C00, (short)din.get(3)); // 0000 1100 0000 0000
+        assertEquals((short)0x0C00, (short)din.get(0)); // 0000 1100 0000 0000
+        assertEquals((short)0x0F01, (short)din.get(1)); // 0000 1111 0000 0001‬
+        assertEquals((short)0x060B, (short)din.get(2)); // 0000 0110 0000 1011
+        assertEquals((short)0x0000, (short)din.get(3)); // 0000 0000 0000 0000
     }
 
     private List<Short> assertCommon(final List<BitChange> result, final int displayCount) {

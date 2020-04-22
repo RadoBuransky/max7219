@@ -20,7 +20,9 @@ class PacketSerialization {
     static List<Max7219.BitChange> serialize(final List<Short> packets) {
         final ArrayList<Max7219.BitChange> result = new ArrayList<>(packets.size()*16*3+2);
         result.add(Max7219.BitChange.LOADCS_LOW);
-        packets.forEach(packet -> packetToClkDin(packet, result));
+        for (int i = packets.size() - 1; i >= 0; i--) {
+            packetToClkDin(packets.get(i), result);
+        }
         result.add(Max7219.BitChange.LOADCS_HIGH);
         return result;
     }
