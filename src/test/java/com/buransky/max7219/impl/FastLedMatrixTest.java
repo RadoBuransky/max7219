@@ -139,6 +139,19 @@ public class FastLedMatrixTest {
     }
 
     @Test
+    public void testSetLedStatusOutSideRange() {
+        // Execute
+        fastLedMatrix.setLedStatus(11, -2, true);
+        fastLedMatrix.setLedStatus(-3, 77, true);
+
+        // Assert
+        assertEquals(0x0L, fastLedMatrix.displays[0]);
+        assertEquals(0x0L, fastLedMatrix.displays[1]);
+        assertEquals(0x0L, fastLedMatrix.displays[2]);
+        assertEquals(0x0L, fastLedMatrix.displays[3]);
+    }
+
+    @Test
     public void testGetLedStatus() {
         // Prepare
         fastLedMatrix.setLedStatus(7, 15, true);

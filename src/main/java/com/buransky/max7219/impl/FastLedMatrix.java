@@ -59,9 +59,13 @@ public class FastLedMatrix implements LedMatrix {
     @Override
     public void setLedStatus(final int row, final int column, final boolean ledOn) {
         final int displayIndex = (int)getDisplayIndex(row, column);
-        final int bitPosition = (int)getBitPosition(row % displayRows, column % displayColumns);
-        displays[displayIndex] = setBit(displays[displayIndex], bitPosition, ledOn);
-        anyChange = true;
+        if (displayIndex < displaysHorizontally*displaysVertically) {
+            final int bitPosition = (int) getBitPosition(row % displayRows, column % displayColumns);
+            if (bitPosition < displayRows*displayColumns) {
+                displays[displayIndex] = setBit(displays[displayIndex], bitPosition, ledOn);
+                anyChange = true;
+            }
+        }
     }
 
     @Override
